@@ -1,3 +1,5 @@
+var ui = require("ui-lib/library");
+
 var query = "Marker", tracking, marker;
 
 const toast = (str, n) => Vars.ui.showInfoToast(str, n);
@@ -54,7 +56,6 @@ var region;
 const thresh = Vars.tilesize * 5;
 
 marker = newEffect(60 * 15, e => {
-try {
 	// Don't die unless tracker is disabled
 	if (!tracking) {
 		e.time = 0;
@@ -78,27 +79,20 @@ try {
 	Draw.rect(region, e.x, e.y, dist < thresh ? rot : angle - 90);
 	// Don't break everything
 	Draw.color();
-} catch (e) { print(e); throw e;}
 });
 
-Events.on(EventType.ClientLoadEvent, run(() => {
-	const table = new Table();
-	table.setFillParent(true);
+ui.addTable("top", "tracker", table => {
+	table.defaults().width(120).height(50);
 
-	table.addField("Track...", cons(input => {
+	table.addField("Tracker", cons(input => {
 		query = input;
 	}));
 	table.addImageButton(Icon.zoom, Styles.clearPartiali, run(() => {
 		parse();
 	}));
+});
 
-	table.visible(boolp(() => Vars.state.state == GameState.State.playing));
-	table.defaults().width(120).height(50);
-	table.margin(4).top().left();
-	table.marginTop(80).marginLeft(400);
-
-	Core.scene.add(table);
-
-	/* Marker sprite */
+/* Marker sprite */
+ui.onLoad(() => {
 	region = Core.atlas.find("shell-back");
-}));
+});
