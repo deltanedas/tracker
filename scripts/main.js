@@ -1,6 +1,6 @@
 var ui = require("ui-lib/library");
 
-var query = "Marker", tracking, marker;
+var query = "Marker", tracking;
 
 const toast = (str, n) => Vars.ui.showInfoToast(str, n);
 
@@ -11,12 +11,7 @@ this.global.tracker = {
 			For positions, use {x: x, y: y}.
 			Units (Players too) can be used as-is. */
 	setMarker(pos) {
-		// TODO: stop using buggy effects
-		tracking = undefined;
-		Core.app.post(run(() => {
-			tracking = pos;
-			Effects.effect(marker, Vars.player.x, Vars.player.y);
-		}));
+		tracking = pos;
 	},
 	getMarker: () => tracking
 }
@@ -66,31 +61,48 @@ var region;
 // How far away the marker can be drawn from the player
 const thresh = Vars.tilesize * 5;
 
-marker = newEffect(60 * 15, e => {
-	// Don't die unless tracker is disabled
-	if (!tracking) {
-		e.time = 0;
-		return;
-	}
-	e.time = 60 * 15;
+// Bullets are an awful hack but it'll do until 6.0 comes around
+const marker = new JavaAdapter(BulletType, {
+	update(b) {
+		b.time(0);
+		// Trick renderer into always drawing it
+		b.x = Vars.player.x;
+		b.y = Vars.player.y;
+	},
+	draw(b) {
+		if (!tracking) {
+			return;
+		}
 
-	const angle = Angles.angle(Vars.player.x, Vars.player.y, tracking.x, tracking.y);
-	const dist = Math.min(thresh, Mathf.dst(tracking.x, tracking.y, Vars.player.x, Vars.player.y));
+		const angle = Angles.angle(Vars.player.x, Vars.player.y, tracking.x, tracking.y);
+		const dist = Math.min(thresh, Mathf.dst(tracking.x, tracking.y, Vars.player.x, Vars.player.y));
 
-	e.x = Vars.player.x + Angles.trnsx(angle, dist);
-	e.y = Vars.player.y + Angles.trnsy(angle, dist);
-	const now = Time.time();
+		const x = Vars.player.x + Angles.trnsx(angle, dist);
+		const y = Vars.player.y + Angles.trnsy(angle, dist);
+		const now = Time.time();
 
-	// Used when target is near the player
-	const rot = Math.sin(now / 20) * 360;
+		// Used when target is near the player
+		const rot = Math.sin(now / 20) * 360;
 
-	// Sin-wave red to yellow
-	Draw.color(Color.red, Pal.stat, Math.sin(now / 10));
-	Draw.alpha(0.8);
-	Draw.rect(region, e.x, e.y, dist < thresh ? rot : angle - 90);
-	// Don't break everything
-	Draw.color();
-});
+		// Sin-wave red to yellow
+		Draw.color(Color.red, Pal.stat, Math.sin(now / 10));
+		Draw.alpha(0.8);
+		Draw.rect(region, x, y, dist < thresh ? rot : angle - 90);
+		// Don't break everything
+		Draw.color();
+	},
+
+	init(b) {},
+	collides: (b, t) => false,
+	hit(b, x, y) {
+		Log.error("Marker hit something, should never ever happen.");
+	},
+	despawned() {}
+}, 1, 0);
+marker.lifetime = 600;
+marker.hitTiles = false;
+marker.collides = false;
+marker.keepVelocity = false;
 
 /* UI */
 
@@ -107,3 +119,7 @@ ui.addTable("top", "tracker", table => {
 ui.onLoad(() => {
 	region = Core.atlas.find("shell-back");
 });
+
+Events.on(EventType.WorldLoadEvent, run(() => {
+	Bullet.create(marker, Vars.player, 0, 0, 0);
+}));
