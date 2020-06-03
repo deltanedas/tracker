@@ -4,16 +4,26 @@ var query = "Marker", tracking, marker;
 
 const toast = (str, n) => Vars.ui.showInfoToast(str, n);
 
+this.global.tracker = {
+	/* Set what the marker is tracking.
+		Unit/Position pos:
+			What the marker will track, or undefined to reset it.
+			For positions, use {x: x, y: y}.
+			Units (Players too) can be used as-is. */
+	setMarker(pos) {
+		// TODO: stop using buggy effects
+		tracking = undefined;
+		Core.app.post(run(() => {
+			tracking = pos;
+			Effects.effect(marker, Vars.player.x, Vars.player.y);
+		}));
+	},
+	getMarker: () => tracking
+}
+
 /* Parsing the query */
 
-// Kill the last marker
-function track(next) {
-	tracking = undefined;
-	Core.app.post(run(() => {
-		tracking = next;
-		Effects.effect(marker, Vars.player.x, Vars.player.y);
-	}));
-}
+const track = this.global.tracker.setMarker;
 
 function parsePos(x, y) {
 	x = Mathf.clamp(parseInt(x), 0, Vars.world.width());
@@ -37,6 +47,7 @@ function parsePlayer() {
 function parse() {
 	if (query == "") {
 		tracking = undefined;
+		toast("Removed tracker", 4);
 		return;
 	}
 
@@ -81,18 +92,18 @@ marker = newEffect(60 * 15, e => {
 	Draw.color();
 });
 
-ui.addTable("top", "tracker", table => {
-	table.defaults().width(120).height(50);
+/* UI */
 
-	table.addField("Tracker", cons(input => {
-		query = input;
-	}));
-	table.addImageButton(Icon.zoom, Styles.clearPartiali, run(() => {
+ui.addTable("top", "tracker", table => {
+	table.addImageButton(Icon.zoom, Styles.clearTransi, run(() => {
 		parse();
 	}));
+	table.addField("Tracker", cons(input => {
+		query = input;
+	})).width(150);
 });
 
-/* Marker sprite */
+/* Sprite */
 ui.onLoad(() => {
 	region = Core.atlas.find("shell-back");
 });

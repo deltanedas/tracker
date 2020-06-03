@@ -3,7 +3,7 @@
 	"displayName": "[#00aaff]Tracker",
 	"author": "DeltaNedas",
 	"description": "Create easily visible markers to track a position or player.\n[stat]Requires [#00aaff]DeltaNedas/ui-lib[].",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"dependencies": ["ui-lib"],
 	"hidden": true
 }
