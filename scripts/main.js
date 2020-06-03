@@ -115,11 +115,10 @@ ui.addTable("top", "tracker", table => {
 	})).width(150);
 });
 
-/* Sprite */
-ui.onLoad(() => {
+// Only hook world load event and load sprite once
+ui.once(() => {
+	Events.on(EventType.WorldLoadEvent, run(() => {
+		Bullet.create(marker, Vars.player, 0, 0, 0);
+	}));
 	region = Core.atlas.find("shell-back");
 });
-
-Events.on(EventType.WorldLoadEvent, run(() => {
-	Bullet.create(marker, Vars.player, 0, 0, 0);
-}));
