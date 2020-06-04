@@ -75,19 +75,25 @@ const marker = new JavaAdapter(BulletType, {
 		}
 
 		const angle = Angles.angle(Vars.player.x, Vars.player.y, tracking.x, tracking.y);
-		const dist = Math.min(thresh, Mathf.dst(tracking.x, tracking.y, Vars.player.x, Vars.player.y));
+		const dist = Mathf.dst(tracking.x, tracking.y, Vars.player.x, Vars.player.y);
 
-		const x = Vars.player.x + Angles.trnsx(angle, dist);
-		const y = Vars.player.y + Angles.trnsy(angle, dist);
+		const x = Vars.player.x + Angles.trnsx(angle, thresh);
+		const y = Vars.player.y + Angles.trnsy(angle, thresh);
 		const now = Time.time();
 
-		// Used when target is near the player
 		const rot = Math.sin(now / 20) * 360;
 
 		// Sin-wave red to yellow
 		Draw.color(Color.red, Pal.stat, Math.sin(now / 10));
 		Draw.alpha(0.8);
-		Draw.rect(region, x, y, dist < thresh ? rot : angle - 90);
+
+		// Draw one around player
+		if (dist > thresh) {
+			Draw.rect(region, x, y, angle - 90);
+		}
+		// and on the target
+		Draw.rect(region, tracking.x, tracking.y, rot);
+
 		// Don't break everything
 		Draw.color();
 	},
