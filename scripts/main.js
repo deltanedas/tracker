@@ -92,7 +92,7 @@ const marker = new JavaAdapter(BulletType, {
 		Draw.color();
 	},
 
-	init(b) {},
+	init(b) {print("added one")},
 	collides: (b, t) => false,
 	hit(b, x, y) {
 		Log.error("Marker hit something, should never ever happen.");
@@ -118,6 +118,12 @@ ui.addTable("top", "tracker", table => {
 // Only hook world load event and load sprite once
 ui.once(() => {
 	Events.on(EventType.WorldLoadEvent, run(() => {
+		// Refresh the target's Player object
+		if (tracking instanceof Player) {
+			Core.app.post(run(() => {
+				tracking = Vars.playerGroup.getByID(tracking.id);
+			}));
+		}
 		Bullet.create(marker, Vars.player, 0, 0, 0);
 	}));
 	region = Core.atlas.find("shell-back");
