@@ -92,7 +92,7 @@ const marker = new JavaAdapter(BulletType, {
 		Draw.color();
 	},
 
-	init(b) {print("added one")},
+	init(b) {},
 	collides: (b, t) => false,
 	hit(b, x, y) {
 		Log.error("Marker hit something, should never ever happen.");
