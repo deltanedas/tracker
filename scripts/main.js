@@ -1,6 +1,6 @@
 var ui = require("ui-lib/library");
 
-var query = "Marker", tracking;
+var query = "Marker", tracking, entity;
 
 const toast = (str, n) => Vars.ui.showInfoToast(str, n);
 
@@ -83,16 +83,18 @@ const marker = new JavaAdapter(BulletType, {
 
 		const rot = Math.sin(now / 20) * 360;
 
-		// Sin-wave red to yellow
+		// Sin-wave red to yellow for the target
 		Draw.color(Color.red, Pal.stat, Math.sin(now / 10));
 		Draw.alpha(0.8);
 
-		// Draw one around player
+		// Draw marker around player and on the target
+		Draw.rect(region, tracking.x, tracking.y, rot);
 		if (dist > thresh) {
+			Draw.color(Color.red, Pal.stat, thresh * 2.5 / dist);
+			Draw.alpha(0.8)
+			// Brighter when closer
 			Draw.rect(region, x, y, angle - 90);
 		}
-		// and on the target
-		Draw.rect(region, tracking.x, tracking.y, rot);
 
 		// Don't break everything
 		Draw.color();
@@ -103,7 +105,9 @@ const marker = new JavaAdapter(BulletType, {
 	hit(b, x, y) {
 		Log.error("Marker hit something, should never ever happen.");
 	},
-	despawned() {}
+	despawned() {
+		Log.error("Bullet despawned");
+	}
 }, 1, 0);
 marker.lifetime = 600;
 marker.hitTiles = false;
