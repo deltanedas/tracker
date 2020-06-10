@@ -58,61 +58,50 @@ function parse() {
 /* Drawing */
 
 var region;
-// How far away the marker can be drawn from the player
-const thresh = Vars.tilesize * 5;
 
-// Bullets are an awful hack but it'll do until 6.0 comes around
-const marker = new JavaAdapter(BulletType, {
-	update(b) {
-		b.time(0);
-		// Trick renderer into always drawing it
-		b.x = Vars.player.x;
-		b.y = Vars.player.y;
-	},
-	draw(b) {
-		if (!tracking) {
-			return;
-		}
-
-		const angle = Angles.angle(Vars.player.x, Vars.player.y, tracking.x, tracking.y);
-		const dist = Mathf.dst(tracking.x, tracking.y, Vars.player.x, Vars.player.y);
-
-		const x = Vars.player.x + Angles.trnsx(angle, thresh);
-		const y = Vars.player.y + Angles.trnsy(angle, thresh);
-		const now = Time.time();
-
-		const rot = Math.sin(now / 20) * 360;
-
-		// Sin-wave red to yellow for the target
-		Draw.color(Color.red, Pal.stat, Math.sin(now / 10));
-		Draw.alpha(0.8);
-
-		// Draw marker around player and on the target
-		Draw.rect(region, tracking.x, tracking.y, rot);
-		if (dist > thresh) {
-			Draw.color(Color.red, Pal.stat, thresh * 2.5 / dist);
-			Draw.alpha(0.8)
-			// Brighter when closer
-			Draw.rect(region, x, y, angle - 90);
-		}
-
-		// Don't break everything
-		Draw.color();
-	},
-
-	init(b) {},
-	collides: (b, t) => false,
-	hit(b, x, y) {
-		Log.error("Marker hit something, should never ever happen.");
-	},
-	despawned() {
-		Log.error("Bullet despawned");
+// Used for transforming positions
+var trackerVec = new Vec2();
+ui.addEffect((w, h) => {
+	if (!tracking) {
+		return;
 	}
-}, 1, 0);
-marker.lifetime = 600;
-marker.hitTiles = false;
-marker.collides = false;
-marker.keepVelocity = false;
+
+	// How far away the marker can be drawn from the player
+	// Distance scales with camera zoom
+	const thresh = Vars.tilesize * 5 * Core.graphics.width / Core.camera.width;
+
+	// Screen center
+	const cx = w / 2, cy = h / 2;
+	trackerVec.set(tracking.x, tracking.y);
+
+	// Pos of tracker on screen
+	const pos = Core.camera.project(trackerVec);
+
+	const angle = Angles.angle(cx, cy, pos.x, pos.y);
+	const dist = Mathf.dst(pos.x, pos.y, cx, cy);
+
+	const x = cx + Angles.trnsx(angle, thresh);
+	const y = cy + Angles.trnsy(angle, thresh);
+	const now = Time.time();
+
+	const rot = Math.sin(now / 20) * 360;
+
+	// Sin-wave red to yellow for the target
+	Draw.color(Color.red, Pal.stat, Math.sin(now / 10));
+	Draw.alpha(0.8);
+
+	// Draw marker around player and on the target
+	Draw.rect(region, pos.x, pos.y, rot);
+	if (dist > thresh) {
+		// Brighter when closer
+		Draw.color(Color.red, Pal.stat, thresh * 2.5 / dist);
+		Draw.alpha(0.8)
+		Draw.rect(region, x, y, angle - 90);
+	}
+
+	// Don't break everything
+	Draw.color();
+});
 
 /* UI */
 
@@ -125,7 +114,7 @@ ui.addTable("top", "tracker", table => {
 	})).width(150);
 });
 
-// Only hook world load event and load sprite once
+// Only hook world load event once
 ui.once(() => {
 	Events.on(EventType.WorldLoadEvent, run(() => {
 		// Refresh the target's Player object
@@ -134,7 +123,7 @@ ui.once(() => {
 				tracking = Vars.playerGroup.getByID(tracking.id);
 			}));
 		}
-		Bullet.create(marker, Vars.player, 0, 0, 0);
 	}));
+}, () => {
 	region = Core.atlas.find("shell-back");
 });
