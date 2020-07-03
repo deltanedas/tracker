@@ -15,7 +15,9 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-var ui = require("ui-lib/library");
+(() => {
+
+const ui = require("ui-lib/library");
 
 var query = "Marker", tracking, entity;
 
@@ -143,3 +145,5 @@ Events.on(EventType.WorldLoadEvent, run(() => {
 ui.onLoad(() => {
 	region = Core.atlas.find("shell-back");
 });
+
+})();
