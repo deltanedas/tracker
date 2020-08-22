@@ -15,8 +15,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-(() => {
-
 const ui = require("ui-lib/library");
 
 var query = "Marker", tracking, entity;
@@ -28,7 +26,7 @@ this.global.tracker = {
 		Unit/Position pos:
 			What the marker will track, or undefined to reset it.
 			For positions, use {x: x, y: y}.
-			Units (Players too) can be used as-is. */
+			Units can be used as-is. */
 	setMarker(pos) {
 		tracking = pos;
 	},
@@ -48,8 +46,9 @@ function parsePos(x, y) {
 
 function parsePlayer() {
 	const name = query.toLowerCase();
-	const player = Vars.playerGroup.find(boolf(
-		player => Strings.stripColors(player.name.toLowerCase()).includes(name)));
+	const player = Groups.player.find(player => {
+		return Strings.stripColors(player.name.toLowerCase()).includes(name);
+	});
 	if (!player) {
 		toast("[red]Query isn't a position or player", 5);
 		return;
@@ -58,7 +57,7 @@ function parsePlayer() {
 	track(player);
 }
 
-function parse() {
+const parse = () => {
 	if (query == "") {
 		tracking = undefined;
 		toast("Removed tracker", 4);
@@ -81,13 +80,11 @@ var region;
 // Used for transforming positions
 var trackerVec = new Vec2();
 ui.addEffect((w, h) => {
-	if (!tracking) {
-		return;
-	}
+	if (!tracking) return;
 
 	// How far away the marker can be drawn from the player
 	// Distance scales with camera zoom
-	const thresh = Vars.tilesize * 5 * Core.graphics.width / Core.camera.width;
+	const thresh = Vars.tilesize * 5 * w / Core.camera.width;
 
 	// Screen center
 	const cx = w / 2, cy = h / 2;
@@ -125,25 +122,23 @@ ui.addEffect((w, h) => {
 /* UI */
 
 ui.addTable("top", "tracker", table => {
-	table.addImageButton(Icon.zoom, Styles.clearTransi, run(() => {
+	table.button(Icon.zoom, Styles.clearTransi, () => {
 		parse();
-	}));
-	table.addField("Tracker", cons(input => {
+	});
+	table.field("Tracker", input => {
 		query = input;
-	})).width(150);
+	}).width(150);
 });
 
-Events.on(EventType.WorldLoadEvent, run(() => {
+Events.on(WorldLoadEvent, () => {
 	// Refresh the target's Player object
 	if (tracking instanceof Player) {
-		Core.app.post(run(() => {
-			tracking = Vars.playerGroup.getByID(tracking.id);
-		}));
+		Core.app.post(() => {
+			tracking = Groups.player.getByID(tracking.id);
+		});
 	}
-}));
+});
 
 ui.onLoad(() => {
 	region = Core.atlas.find("shell-back");
 });
-
-})();
