@@ -81,10 +81,13 @@ var region;
 var trackerVec = new Vec2();
 ui.addEffect((w, h) => {
 	if (!tracking) return;
+	const zoom = w / Core.camera.width / 4;
+	const prev = Draw.scl;
+	Draw.scl = zoom;
 
 	// How far away the marker can be drawn from the player
 	// Distance scales with camera zoom
-	const thresh = Vars.tilesize * 5 * w / Core.camera.width;
+	const thresh = Vars.tilesize * 5 * zoom;
 
 	// Screen center
 	const cx = w / 2, cy = h / 2;
@@ -117,6 +120,7 @@ ui.addEffect((w, h) => {
 
 	// Don't break everything
 	Draw.color();
+	Draw.scl = prev;
 });
 
 /* UI */
