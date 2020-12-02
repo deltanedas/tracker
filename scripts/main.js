@@ -101,7 +101,7 @@ ui.addEffect((w, h) => {
 
 	const x = cx + Angles.trnsx(angle, thresh);
 	const y = cy + Angles.trnsy(angle, thresh);
-	const now = Time.time();
+	const now = Time.time;
 
 	const rot = Math.sin(now / 20) * 360;
 
