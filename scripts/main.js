@@ -21,7 +21,7 @@ var query = "Marker", tracking, entity;
 
 const toast = (str, n) => Vars.ui.showInfoToast(str, n);
 
-this.global.tracker = {
+global.tracker = {
 	/* Set what the marker is tracking.
 		Unit/Position pos:
 			What the marker will track, or undefined to reset it.
@@ -35,7 +35,7 @@ this.global.tracker = {
 
 /* Parsing the query */
 
-const track = this.global.tracker.setMarker;
+const track = global.tracker.setMarker;
 
 function parsePos(x, y) {
 	x = Mathf.clamp(parseInt(x), 0, Vars.world.width());
