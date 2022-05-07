@@ -126,7 +126,7 @@ ui.addEffect((w, h) => {
 /* UI */
 
 ui.addTable("top", "tracker", table => {
-	table.button(Icon.zoom, Styles.clearTransi, () => {
+	table.button(Icon.zoom, Styles.cleari, () => {
 		parse();
 	});
 	table.field("Tracker", input => {
