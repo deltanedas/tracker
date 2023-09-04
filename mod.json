@@ -4,7 +4,7 @@
 	"author": "deltanedas",
 	"description": "Create easily visible markers to track a position or player.\n[stat]Requires [#00aaff]deltanedas/ui-lib[].",
 	"version": "3.5.2",
-	"dependencies": ["ui-lib"],
+	"dependencies": ["ui_lib"],
 	"hidden": true,
 	"minGameVersion": 136,
 	"repo": "deltanedas/tracker"
